@@ -1,11 +1,20 @@
-# IR 設計
+# IR
+
+## 訴求
+
+- 要能表示所有可微分語法
+- 可接受大量變更，可以不用隨機存取
+- 要能與 `syn` 做轉換
+- 基本的 Optimizer
+
+## 設計
 
 - ir
   - [Scope](#scope)
   - [Method](#method)
   - [Call](#call)
   - [Ret](#ret)
-  - [Dec](#dec)
+  - [Assign](#assign)
   - [Lit](#lit)
   - [Code](#code)
 - type
@@ -18,7 +27,7 @@
 struct Scope {
     id: ScopeId,
     ty: ScopeTy,
-    content: Ir
+    content: LinkList<Ir>
 }
 ```
 
@@ -27,9 +36,10 @@ struct Scope {
 呼叫 `method`
 
 ```rust
-struct Method<N> {
+struct Method<MP, G> {
     receiver: Var,
-    name: N,
+    path: MP,
+    generic: Option<G>,
     args: Vec<Var>,
 }
 ```
@@ -39,8 +49,8 @@ struct Method<N> {
 呼叫函數
 
 ```rust
-struct Call<P, G> {
-    path: P,
+struct Call<CP, G> {
+    path: CP,
     generic: Option<G>,
     args: Vec<Var>,
 }
@@ -86,9 +96,11 @@ struct Code<C>(C);
 
 ## Id
 
-內部Id，可能會變動
+內部Id，可能會變動，不能自行創建
 
 ## Var
+
+變數，Tmp會由IR Optimizer決定是否生成
 
 ```rust
 enum Var<N> {
