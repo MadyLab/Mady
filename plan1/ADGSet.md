@@ -1,42 +1,54 @@
-# 有集合自動微分圖
+# ADG with Set Theory
 
-## 訴求
+## Goals
 
 - Lazy
 
-    移除節點或邊要能延後一次處理以減少不必要的延遲，主要用於 Optimizer
+    can apply change all at once, it is for Optimizer.
 
-- 有 Set
+- Set Theory
 
-    Node 要有 Parent Set且能快速找到自己的 Sub Set，對應[IR的Scope](./IR.md#scope)
+    Every node has parent set and find their sub set below O(n), it is equal to [scope in IR](../IR.md#scope)
 
-- 能接受大量節點變更
-- 要有Optimizer
+- can remove a lot of node
 
-## 理論
+## Theory
 
-在基本的ADG的實現上加入Set的概念，所有集合只有 $A\subset B$ 或 $A\cap B = \empty$ 的關係，函數本身是 $U$，當BP時只會處理  $\forall \subset S$ ，利用分別處理Subset的BP以減少大量的全域變數(註: 放在函數開頭)
+We use $\subset$ and $\supset$ to indicate proper subset and proper superset
 
-實作中會有一個變數映射表，用於查找變數，當一個可變變數賦值時會更改指向的節點為賦值的節點，ADG中變數節點只有函數輸入值，本地變數只會如上所述，在變數映射表中出現
+Add Set Theory to ADG. For given any two set $A$ and $B$, their relationship is either $A\subset B$ or $A\cap B = \emptyset$. The function is $U$ set. BP only iterate $\set{x | x \in B \cup \set{\forall A \subset B}'}$ to reduce function top level variable & complex BP.
 
-## 測試
+```rust
 
-### [test1](./EdgeCase.md#test1)
+struct VariableMap {
+    map: HashMap<VariableName, VariableStack>
+}
 
-無法處理
+struct VariableStack {
+    stack: LinkList<NodeId>
+}
+```
 
-### [test1](./EdgeCase.md#test2)
+`VariableMap` is a map mapping variable name to ADG node id, VariableStack is use to solve variable shadowing. When a variable assign with new value, node id will change to the node of new value.
+
+## Test
+
+### [test1](../EdgeCase.md#test1)
+
+It cannot solve this test because proc-macro cannot know whether the call take the value or not.
+
+### [test1](../EdgeCase.md#test2)
 
 TODO
 
-### [test3](./EdgeCase.md#test3)
+### [test3](../EdgeCase.md#test3)
 
-![test3](images/set-test3.png)
+![test3](../images/set-test3.png)
 
-### [test4](./EdgeCase.md#test4)
+### [test4](../EdgeCase.md#test4)
 
 TODO
 
-### [test5](./EdgeCase.md#test5)
+### [test5](../EdgeCase.md#test5)
 
-![Alt text](images/set-test5.png)
+![Alt text](../images/set-test5.png)
