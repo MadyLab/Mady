@@ -3,7 +3,6 @@
 ## Goal
 
 - can construct all differentiable syntax
-- 要能表示所有可微分語法
 - Can modify a lot of node (use link list)
 - can convert from `syn`
 
@@ -82,7 +81,7 @@ struct Ret {
 assign variable, `A` can be a destruct pattern
 
 ```rust
-struct Assign<A:AsRef<[Var]>> {
+struct Assign<A: AsRef<[Var]>> {
     vars: A,
     value: Ir,
 }
