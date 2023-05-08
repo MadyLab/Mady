@@ -1,13 +1,13 @@
 # IR
 
-## 訴求
+## Goal
 
+- can construct all differentiable syntax
 - 要能表示所有可微分語法
-- 可接受大量變更，可以不用隨機存取
-- 要能與 `syn` 做轉換
-- 基本的 Optimizer
+- Can modify a lot of node (use link list)
+- can convert from `syn`
 
-## 設計
+## Design
 
 - ir
   - [Scope](#scope)
@@ -31,9 +31,19 @@ struct Scope {
 }
 ```
 
+```rust
+enum ScopeTy {
+    If,
+    Else,
+    Loop,
+    Closure,
+    Fn,
+}
+```
+
 ## Method
 
-呼叫 `method`
+call `method`
 
 ```rust
 struct Method<MP, G> {
@@ -46,7 +56,7 @@ struct Method<MP, G> {
 
 ## Call
 
-呼叫函數
+call `fn`
 
 ```rust
 struct Call<CP, G> {
@@ -58,7 +68,7 @@ struct Call<CP, G> {
 
 ## Ret
 
-回傳值，要指定 `scope`
+return value, `ScopeId` is required
 
 ```rust
 struct Ret {
@@ -69,18 +79,18 @@ struct Ret {
 
 ## Assign
 
-將變數賦值
+assign variable, `A` can be a destruct pattern
 
 ```rust
-struct Assign {
-    var: Var,
+struct Assign<A:AsRef<[Var]>> {
+    vars: A,
     value: Ir,
 }
 ```
 
 ## Lit
 
-常數類型，不會計算偏微分且會被ADG優化掉，像是非與函數輸入值有關係的值
+Literal. e.g. `"Hello World"`、`1234`
 
 ```rust
 struct Lit<L> (L);
@@ -88,7 +98,7 @@ struct Lit<L> (L);
 
 ## Code
 
-就是忽略的程式碼，不會參與ADG生成，只會在IR生成時補回
+Raw Code
 
 ```rust
 struct Code<C>(C);
@@ -96,15 +106,15 @@ struct Code<C>(C);
 
 ## Id
 
-內部Id，可能會變動，不能自行創建
+Internal Id. Cannot be create.
 
 ## Var
 
-變數，Tmp會由IR Optimizer決定是否生成
+variable. A variable without var field is view as temp variable, it may be removed by optimizer.
 
 ```rust
-enum Var<N> {
-    Tmp(VarId),
-    Named(N)
+struct Var<V> {
+    id: VarId,
+    var: Option<V>
 }
 ```
