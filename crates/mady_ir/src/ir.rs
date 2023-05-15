@@ -38,36 +38,45 @@ mod seal {
 pub struct Function {}
 
 #[derive(Debug, Clone)]
-pub struct Scope<const L: usize, T: TypeMarker> {
+pub struct Scope<T: TypeMarker> {
     pub id: ScopeId,
-    pub ir: LinkedList<Ir<L, T>>,
+    pub ir: LinkedList<Ir<T>>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ScopeId(usize);
 
 #[derive(Debug, Clone)]
-pub enum Ir<const L: usize, T: TypeMarker> {
-    Scope(IrScope<L, T>),
-    Method(Method<T>),
+pub enum Ir<T: TypeMarker> {
+    Scope(IrScope<T>),
     Call(Call<T>),
+    Method(Method<T>),
+    Assign(Assign<T>),
+    Ret(Ret<T>),
     Code(Code<T>),
-    Assign(Assign<L, T>),
-    Ret(Ret<L, T>),
+    Lit(Lit<T>),
 }
 
 #[derive(Debug, Clone)]
-pub enum IrScope<const L: usize, T: TypeMarker> {
-    If(Scope<L, T>),
-    IfElse(IfElseScope<L, T>),
-    Loop(Scope<L, T>),
-    Closure(Scope<L, T>),
+pub enum IrScope<T: TypeMarker> {
+    Block(Scope<T>),
+    If(IfScope<T>),
+    IfElse(IfElseScope<T>),
+    Loop(Scope<T>),
+    Closure(Scope<T>),
 }
 
 #[derive(Debug, Clone)]
-pub struct IfElseScope<const L: usize, T: TypeMarker> {
-    pub if_scope: Scope<L, T>,
-    pub else_scope: Scope<L, T>,
+pub struct IfScope<T: TypeMarker> {
+    pub cond: Code<T>,
+    pub if_scope: Scope<T>,
+}
+
+#[derive(Debug, Clone)]
+pub struct IfElseScope<T: TypeMarker> {
+    pub cond: Code<T>,
+    pub if_scope: Scope<T>,
+    pub else_scope: Scope<T>,
 }
 
 #[derive(Debug, Clone)]
@@ -93,15 +102,15 @@ pub struct Call<T: TypeMarker> {
 }
 
 #[derive(Debug, Clone)]
-pub struct Ret<const L: usize, T: TypeMarker> {
-    pub var: [Var<T>; L],
+pub struct Ret<T: TypeMarker> {
+    pub var: Var<T>,
     pub scope: ScopeId,
 }
 
 #[derive(Debug, Clone)]
-pub struct Assign<const L: usize, T: TypeMarker> {
+pub struct Assign<T: TypeMarker> {
     pub vars: T::Assign,
-    pub value: Box<Ir<L, T>>,
+    pub value: Box<Ir<T>>,
 }
 
 #[derive(Debug, Clone)]
